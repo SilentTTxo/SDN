@@ -1,5 +1,8 @@
 package com.sdn.core.util;
 
+/**
+ * IP转换相关Util类
+ */
 public class IPUtils {
 
     /**
