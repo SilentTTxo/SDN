@@ -1,5 +1,7 @@
 package com.sdn.core.model;
 
+import java.util.Random;
+
 /**
  * 网元端口信息
  */
@@ -41,5 +43,13 @@ public class NetworkElementPortModel {
         this.isOpen = true;
         this.networkFlux = 0;
         this.maxNetworkFlux = Integer.MAX_VALUE;
+    }
+
+    public void UpdateData(){
+        Random random = new Random();
+        if(isOpen)
+            networkFlux = random.nextFloat() * maxNetworkFlux;
+        else
+            networkFlux = 0;
     }
 }

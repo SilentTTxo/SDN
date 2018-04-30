@@ -2,6 +2,8 @@ package com.sdn.controller.NE;
 
 import com.alibaba.fastjson.JSON;
 import com.sdn.controller.Context;
+import com.sdn.controller.DB.NeInfoDao;
+import com.sdn.controller.DB.Po.NeInfoPo;
 import com.sdn.core.model.NetworkElementModel;
 import com.sdn.core.protocol.NetworkElementDataProtocol;
 import com.sdn.core.protocol.type.Pattion;
@@ -41,12 +43,16 @@ public class ReceiveWorker extends Thread {
                 Context.closeSocket(socket);
                 return;
             }
-            logger.info("recive data : "+ networkElementDataProtocol);
             switch (networkElementDataProtocol.getPattion()){
                 case Pattion.SEND_DATA:{
                     String json = networkElementDataProtocol.getData();
                     NetworkElementModel networkElementModel = JSON.parseObject(json,NetworkElementModel.class);
                     this.Ip = networkElementModel.getIpAddress();
+                    Context.neInfoDao.addNeInfo(new NeInfoPo(networkElementModel));
+                    logger.info("recive status data from : " + networkElementModel.getIpAddressStr());
+
+                    // 加入查询缓存
+                    Context.socketMap.put(socket + "-cache",networkElementModel);
                 }
             }
         }

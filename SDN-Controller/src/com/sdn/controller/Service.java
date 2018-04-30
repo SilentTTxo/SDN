@@ -1,12 +1,14 @@
 package com.sdn.controller;
 
-import com.sdn.controller.Cilent.MiniHttpServer;
+import com.sdn.controller.DB.MysqlConnector;
+import com.sdn.controller.Web.MiniHttpServer;
 import com.sdn.controller.NE.ReceiveWorker;
 import com.sdn.controller.NE.ResponseWorker;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.Connection;
 import java.util.logging.Logger;
 
 /**
@@ -19,9 +21,14 @@ public class Service {
     private int httpPort;
     private MiniHttpServer miniHttpServer;
 
-    Service(int port,int httpPort){
+    Service(int port,int httpPort, String db_url, String db_user, String db_password){
         this.port = port;
         this.httpPort = httpPort;
+
+        Context.DB_URL = db_url;
+        Context.DB_USER = db_user;
+        Context.DB_PASSWORD = db_password;
+        Context.mysqlConnector = new MysqlConnector();
     }
 
     public void start(){
@@ -50,8 +57,18 @@ public class Service {
 
 
     public static void main(String[] args) {
-        Service service = new Service(10880,8080);
+        if(args.length == 0){
+//            Service service = new Service(10880,8080,"jdbc:mysql://HOST:PORT/SDN","USERNAME","PASSWORD");
+//            service.start();
+        } else{
+            int port = Integer.parseInt(args[0]);
+            int httpPort = Integer.parseInt(args[1]);
+            String db_url = args[2];
+            String db_user = args[3];
+            String db_password = args[4];
 
-        service.start();
+            Service service = new Service(port,httpPort,db_url,db_user,db_password);
+            service.start();
+        }
     }
 }

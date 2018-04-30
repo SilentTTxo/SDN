@@ -128,7 +128,7 @@ public class NetworkElementDataProtocol {
     }
 
     public static int parsePattion(byte[] content){
-        byte[] pattionByte =  Arrays.copyOfRange(content,0,NetworkElementDataProtocol.PATTION_LEN - 1);
+        byte[] pattionByte =  Arrays.copyOfRange(content,0,NetworkElementDataProtocol.PATTION_LEN);
         return SocketUtils.byteArrayToInt(pattionByte);
     }
 

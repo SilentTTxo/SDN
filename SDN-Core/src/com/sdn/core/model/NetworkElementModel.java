@@ -57,4 +57,10 @@ public class NetworkElementModel {
     }
 
     public NetworkElementModel() { }
+
+    public void UpdateData(){
+		for (NetworkElementPortModel item : networkElementPortModels){
+		    item.UpdateData();
+        }
+	}
 }

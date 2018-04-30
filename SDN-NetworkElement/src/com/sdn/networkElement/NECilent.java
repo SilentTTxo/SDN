@@ -11,6 +11,8 @@ import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
@@ -24,6 +26,21 @@ public class NECilent {
 
     private Socket socket;
     private InputStream is;
+
+    class UpdateDataTask extends TimerTask {
+        NetworkElementModel networkElementModel = null;
+
+        public UpdateDataTask(NetworkElementModel networkElementModel) {
+            // TODO Auto-generated constructor stub
+            this.networkElementModel = networkElementModel;
+        }
+        @Override
+        public void run() {
+            // TODO Auto-generated method stub
+            networkElementModel.UpdateData();
+        }
+
+    }
 
     /**
      * 初始化cilent
@@ -41,7 +58,11 @@ public class NECilent {
 
         baseInfo = new NetworkElementModel(CilentIp,portNum,portList.toArray(new NetworkElementPortModel[0]));
 
+        Timer timer = new Timer(true);
+        timer.schedule(new UpdateDataTask(baseInfo),0,1000);
+
         this.startConnect(ControllerIp,port);
+
     }
 
     public void startConnect(String ControllerIp,int port) {
@@ -78,6 +99,7 @@ public class NECilent {
                         NetworkElementPortModel[] networkElementPortModels = networkElementModel.getNetworkElementPortModels();
                         for(int i=0;i<networkElementPortModels.length;i++){
                             baseInfo.getNetworkElementPortModels()[i].setMaxNetworkFlux(networkElementPortModels[i].getMaxNetworkFlux());
+                            baseInfo.getNetworkElementPortModels()[i].setOpen(networkElementPortModels[i].isOpen());
                         }
                         logger.info("update end");
                     }
@@ -100,6 +122,14 @@ public class NECilent {
     }
 
     public static void main(String[] args) {
-        NECilent neCilent = new NECilent("192.168.2.161",10880,"192.168.2.161",10);
+        if(args.length == 0){
+            //NECilent neCilent = new NECilent("192.168.2.161",10880,"192.168.2.162",10);
+        }else{
+            String ControllerIp = args[0];
+            int port = Integer.parseInt(args[1]);
+            String CilentIp = args[2];
+            int portNum = Integer.parseInt(args[3]);
+            new NECilent(ControllerIp,port,CilentIp,portNum);
+        }
     }
 }
