@@ -3,8 +3,11 @@ package com.sdn.controller.Web;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.sdn.controller.Context;
+import com.sdn.controller.DB.Po.NeInfoPo;
 import com.sdn.controller.NE.ResponseWorker;
+import com.sdn.controller.Web.Vo.NeInfoVo;
 import com.sdn.core.model.NetworkElementModel;
+import com.sdn.core.model.NetworkElementPortModel;
 import com.sdn.core.protocol.NetworkElementDataProtocol;
 import com.sdn.core.protocol.type.Pattion;
 import com.sun.net.httpserver.HttpExchange;
@@ -16,6 +19,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 小型HttpServer，为客户端提供http接口
@@ -29,6 +33,7 @@ public class MiniHttpServer {
             server = HttpServer.create(new InetSocketAddress(port), 0);
             server.createContext("/ne/update", new UpdateHandler());
             server.createContext("/ne/list", new NEListHandler());
+            server.createContext("/ne/history", new NEHistroyHandler());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -77,6 +82,7 @@ public class MiniHttpServer {
 
             String response = rs;
             exchange.getResponseHeaders().add("Content-Type","application/json");
+            exchange.getResponseHeaders().add("Access-control-Allow-Origin","*");
             exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
             OutputStream os = exchange.getResponseBody();
             os.write(response.getBytes());
@@ -101,10 +107,41 @@ public class MiniHttpServer {
             }
             String response = JSON.toJSONString(rsList);
             exchange.getResponseHeaders().add("Content-Type","application/json");
+            exchange.getResponseHeaders().add("Access-control-Allow-Origin","*");
             exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
             OutputStream os = exchange.getResponseBody();
             os.write(response.getBytes());
             os.close();
+        }
+    }
+
+    /**
+     * 获取网元历史状态
+     */
+    static  class NEHistroyHandler implements HttpHandler{
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if(exchange.getRequestMethod().equals("POST")){
+                String jsonStr = new String(exchange.getRequestBody().readAllBytes());
+                JSONObject param = JSONObject.parseObject(jsonStr);
+                long ip = param.getLong("ip");
+
+                List<NeInfoPo> infoiList = Context.neInfoDao.getNeinfo(ip);
+                List<NeInfoVo> rsList = new ArrayList<>();
+                for(NeInfoPo neInfoPo : infoiList){
+                    NeInfoVo temp = new NeInfoVo();
+                    temp.setCreateTime(neInfoPo.getCreateTime() / 1000);
+                    temp.setInfo(JSON.parseArray(neInfoPo.getInfo(),NetworkElementPortModel.class));
+                    rsList.add(temp);
+                }
+                String response = JSON.toJSONString(rsList);
+                exchange.getResponseHeaders().add("Content-Type","application/json");
+                exchange.getResponseHeaders().add("Access-control-Allow-Origin","*");
+                exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
+                OutputStream os = exchange.getResponseBody();
+                os.write(response.getBytes());
+                os.close();
+            }
         }
     }
 }

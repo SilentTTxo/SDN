@@ -41,6 +41,9 @@ public class NeInfoPo {
         this.createTime = createTime;
     }
 
+    public NeInfoPo() {
+    }
+
     public NeInfoPo(int id, long ip, String info, long createTime) {
         this.id = id;
         this.ip = ip;
